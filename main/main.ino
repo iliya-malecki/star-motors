@@ -2,18 +2,18 @@
 #include <EncButton.h>
 #include <YetAnotherPcInt.h>
 
-#define DT_1 11
-#define CLK_1 10
-#define SW_1 12
-#define LOW_1 1
-#define HIGH_1 13
+#define DT_1 20
+#define CLK_1 19
+#define SW_1 A6
+#define LOW_1 A5
+#define HIGH_1 A7
 
 // CLK_2 либо 19, либо 18. Та же история с DT_2 поскольку пины могут быть перепутаны. Источник из магазина amperka
-#define DT_2 A5
-#define CLK_2 A4
-#define SW_2 A3
-#define LOW_2 A2
-#define HIGH_2 A1
+#define DT_2 A13
+#define CLK_2 A14
+#define SW_2 A2
+#define LOW_2 A3
+#define HIGH_2 A4
 
 #define steps_per_revolution 2000
 #define DO_STEPS 3
@@ -116,11 +116,13 @@ void setup()
 
   pinMode(HIGH_1, OUTPUT);
   digitalWrite(HIGH_1, HIGH);
+  pinMode(LOW_1, OUTPUT);
+  digitalWrite(LOW_1, LOW);
 
   pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
   pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
-  PcInt::attachInterrupt(azimuth.pcint_pins[0], isr_azimuth, &azimuth.pcint_pins[0], RISING);
-  PcInt::attachInterrupt(azimuth.pcint_pins[1], isr_azimuth, &azimuth.pcint_pins[1], RISING);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, RISING);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, RISING);
   
 
   pinMode(LOW_2, OUTPUT);
@@ -139,7 +141,7 @@ void loop()
   delay(1);
   peleng.encoder.tick(); // TODO: этот тик не разрешает нам проверят нажата кнопка или нет 
 
-//  step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(peleng, 0);
+  step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
   step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 0);
 }
 
