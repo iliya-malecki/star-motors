@@ -9,7 +9,7 @@
 #define HIGH_1 A7
 
 // CLK_2 либо 19, либо 18. Та же история с DT_2 поскольку пины могут быть перепутаны. Источник из магазина amperka
-#define DT_2 A13
+#define DT_2 A15
 #define CLK_2 A14
 #define SW_2 A2
 #define LOW_2 A3
