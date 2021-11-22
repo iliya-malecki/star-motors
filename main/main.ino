@@ -115,8 +115,8 @@ void setup()
   peleng.pcint_pins[1] = CLK_2;
 
   pinMode(HIGH_1, OUTPUT);
-  digitalWrite(HIGH_1, HIGH);
   pinMode(LOW_1, OUTPUT);
+  digitalWrite(HIGH_1, HIGH);
   digitalWrite(LOW_1, LOW);
 
   pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
@@ -127,8 +127,8 @@ void setup()
 
   pinMode(LOW_2, OUTPUT);
   pinMode(HIGH_2, OUTPUT);
-  digitalWrite(LOW_2, LOW);
   digitalWrite(HIGH_2, HIGH);
+  digitalWrite(LOW_2, LOW);
 
   pinMode(peleng.pcint_pins[0], INPUT_PULLUP);
   pinMode(peleng.pcint_pins[1], INPUT_PULLUP);
