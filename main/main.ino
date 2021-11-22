@@ -119,17 +119,10 @@ void setup()
   digitalWrite(HIGH_1, HIGH);
   digitalWrite(LOW_1, LOW);
 
-<<<<<<< HEAD
   // pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
   // pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, RISING);
   attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, RISING);
-=======
-  //pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
-  //pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, CHANGE);
->>>>>>> ae5f8b50c8dc6ba26de02dae20c5e939eff47d75
   
 
   pinMode(LOW_2, OUTPUT);
