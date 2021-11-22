@@ -3,7 +3,7 @@
 #include <YetAnotherPcInt.h>
 
 #define DT_1 20
-#define CLK_1 19
+#define CLK_1 21
 #define SW_1 A6
 #define LOW_1 A5
 #define HIGH_1 A7
@@ -45,7 +45,7 @@ struct Axis
 // инициализировать их пустыми конструкторами (проблема точно не изучена, потому что мы забыли в чем конкретно была проблема с Axis)
 Stepper steppers[1][steppers_count_per_axis] {
   {
-    Stepper(steps_per_revolution, 8,  10, 9,  11),
+    Stepper(steps_per_revolution, 11,  10, 8,  9),
     Stepper(steps_per_revolution, 22, 26, 24, 28),
   }
 };
@@ -119,10 +119,10 @@ void setup()
   pinMode(LOW_1, OUTPUT);
   digitalWrite(LOW_1, LOW);
 
-  pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
-  pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, RISING);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, RISING);
+  //pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
+  //pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, CHANGE);
   
 
   pinMode(LOW_2, OUTPUT);
