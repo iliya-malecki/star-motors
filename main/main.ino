@@ -49,7 +49,7 @@ Stepper steppers[2][steppers_count_per_axis] {
   {
     Stepper(steps_per_revolution, 11,  10, 8,  9),
     Stepper(steps_per_revolution, 22, 26, 24, 28),
-    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
+    Stepper(steps_per_revolution, 0, 0, 0, 0)
   },
   {
     Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
@@ -67,18 +67,17 @@ void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
   for (int i = 0; i < steppers_count_per_axis; i++)
   {
     if (axis.target_steps > 0)
-    {
       steppers[axis_index][i].step(-DO_STEPS);
-      axis.target_steps--;
-      Serial.println(axis.target_steps);
-    }
     else if (axis.target_steps < 0)
-    {
       steppers[axis_index][i].step(DO_STEPS);
-      axis.target_steps++;
-      Serial.println(axis.target_steps);
-    }
   }
+
+  if (axis.target_steps > 0)
+    axis.target_steps--;
+  else if (axis.target_steps < 0)
+    axis.target_steps++;
+
+  Serial.println(axis.target_steps);
 }
 
 template <int enc_type, int pin1, int pin2, int pin3>
