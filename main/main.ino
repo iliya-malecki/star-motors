@@ -2,35 +2,37 @@
 #include <EncButton.h>
 #include <YetAnotherPcInt.h>
 
-#define DT_1 20
-#define CLK_1 21
-#define SW_1 A6
-#define LOW_1 A5
-#define HIGH_1 A7
+#define DT_1    20
+#define CLK_1   21
+#define SW_1    A6
+#define LOW_1   A5
+#define HIGH_1  A7
 
-// CLK_2 либо 19, либо 18. Та же история с DT_2 поскольку пины могут быть перепутаны. Источник из магазина amperka
-#define DT_2 A15
-#define CLK_2 A14
-#define SW_2 A2
-#define LOW_2 A3
-#define HIGH_2 A4
+#define DT_2    A15
+#define CLK_2   A14
+#define SW_2    A2
+#define LOW_2   A3
+#define HIGH_2  A4
 
-#define steps_per_revolution 2000
+#define azimuth_steppers_speed 5
+#define peleng_steppers_speed  5
+#define steps_per_revolution   2000
 #define DO_STEPS 3
 
-// на каждую ось расчитано только 2 степпера
-#define steppers_count_per_axis 2
+// на оси пеленг - 3 степпера, в то время как у азимута - 2
+// но в любом случае используем число 3, и игнорируем 3 "степпер" на оси азимут, которого на самом деле не существует
+#define steppers_count_per_axis 3
 
-struct RealStepper
-{
-  RealStepper(const Stepper&& stpr, int bl) 
-  : stepper(stpr), backlash(bl)
-  {
-  }
+// struct RealStepper
+// {
+//   RealStepper(const Stepper&& stpr, int bl) 
+//   : stepper(stpr), backlash(bl)
+//   {
+//   }
   
-  Stepper stepper;
-  int backlash;
-};
+//   Stepper stepper;
+//   int backlash;
+// };
 
 template <int enc_type, int pin1, int pin2, int pin3>
 struct Axis 
@@ -43,10 +45,16 @@ struct Axis
 // средние пины степперов должны быть поменяны иначе он будет только в одну сторону вне зависимости позитивное или негативное значение передается в .step()
 // создаем степперы тут потому что они должны быть инициализированы глобально, чтобы к ним был доступ внутри лупа. Запихнуть их в Axis не получится, поскольку никак не можем
 // инициализировать их пустыми конструкторами (проблема точно не изучена, потому что мы забыли в чем конкретно была проблема с Axis)
-Stepper steppers[1][steppers_count_per_axis] {
+Stepper steppers[2][steppers_count_per_axis] {
   {
     Stepper(steps_per_revolution, 11,  10, 8,  9),
     Stepper(steps_per_revolution, 22, 26, 24, 28),
+    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
+  },
+  {
+    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
+    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
+    Stepper(steps_per_revolution, 0, 0, 0, 0)  // FIXME:
   }
 };
 
@@ -54,27 +62,23 @@ Axis<EB_TICK, CLK_1, DT_1, SW_1> azimuth;
 Axis<EB_TICK, CLK_2, DT_2, SW_2> peleng;
 
 template <int enc_type, int pin1, int pin2, int pin3>
-void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int stepper_index)
+void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
 {
-//  int i = 0;
-
-  // TODO: надо исправить это все говно с индексами когда все степперы будут подключены
-    
-//  for (i = 0; i < steppers_count_per_axis; i++)
-//  {
+  for (int i = 0; i < steppers_count_per_axis; i++)
+  {
     if (axis.target_steps > 0)
     {
-      steppers[stepper_index][0].step(-DO_STEPS);
+      steppers[axis_index][i].step(-DO_STEPS);
       axis.target_steps--;
       Serial.println(axis.target_steps);
     }
     else if (axis.target_steps < 0)
     {
-      steppers[stepper_index][0].step(DO_STEPS);
+      steppers[axis_index][i].step(DO_STEPS);
       axis.target_steps++;
       Serial.println(axis.target_steps);
     }
-//  }
+  }
 }
 
 template <int enc_type, int pin1, int pin2, int pin3>
@@ -100,12 +104,12 @@ void setup()
 {
   Serial.begin(9600);
   
-  // Для разных Axis разная скорость поворотов степперов
-  // TODO: эту хуйню тоже надо исправить когда все степперы подключены
-  steppers[0][0].setSpeed(5);
-  //steppers[0][1].setSpeed(30)
+  for (int i = 0; i < steppers_count_per_axis; i++)
+  {
+    steppers[0][i].setSpeed(azimuth_steppers_speed);
+    steppers[1][i].setSpeed(peleng_steppers_speed);
+  }
 
-  // TODO: надо проверить зачем .counter
   azimuth.encoder.counter = 0;
   peleng.encoder.counter = 0;
 
@@ -139,12 +143,16 @@ void setup()
 void loop()
 {
   delay(1);
-  peleng.encoder.tick(); // TODO: этот тик не разрешает нам проверят нажата кнопка или нет 
+
+  // TODO: этот тик не разрешает нам проверят нажата кнопка или нет 
+  peleng.encoder.tick();
+  azimuth.encoder.tick();
 
   step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
   step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 0);
 }
 
+// FIXME: пофиксить варнинги: убрать аргументы в самом конце, если не используется "софтверный" pcint интерапт
 void isr_azimuth(int* pin, bool pinstate)
 {
   tick_encoder<EB_TICK, CLK_1, DT_1, SW_1>(azimuth);
