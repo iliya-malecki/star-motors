@@ -148,7 +148,7 @@ void loop()
   azimuth.encoder.tick();
 
   step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
-  step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 0);
+  step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 1);
 }
 
 // FIXME: пофиксить варнинги: убрать аргументы в самом конце, если не используется "софтверный" pcint интерапт
