@@ -52,9 +52,9 @@ Stepper steppers[2][steppers_count_per_axis] {
     Stepper(steps_per_revolution, 0, 0, 0, 0)
   },
   {
-    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
-    Stepper(steps_per_revolution, 0, 0, 0, 0), // FIXME:
-    Stepper(steps_per_revolution, 0, 0, 0, 0)  // FIXME:
+    Stepper(steps_per_revolution, 38, 39, 40, 41), // FIXME:
+    Stepper(steps_per_revolution, 42, 43, 44, 45), // FIXME:
+    Stepper(steps_per_revolution, 46, 47, 48, 49)  // FIXME:
   }
 };
 
@@ -124,8 +124,8 @@ void setup()
 
   // pinMode(azimuth.pcint_pins[0], INPUT_PULLUP);
   // pinMode(azimuth.pcint_pins[1], INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, RISING);
-  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, RISING);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, CHANGE);
   
 
   pinMode(LOW_2, OUTPUT);
@@ -147,9 +147,8 @@ void loop()
   peleng.encoder.tick();
   azimuth.encoder.tick();
 
-  // step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
-  // step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 0);
-  steppers[0][0].step(5);
+  step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
+  step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 0);
 }
 
 // FIXME: пофиксить варнинги: убрать аргументы в самом конце, если не используется "софтверный" pcint интерапт
