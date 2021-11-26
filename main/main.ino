@@ -66,7 +66,7 @@ void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
 {
   for (int i = 0; i < steppers_count_per_axis; i++)
   {
-    if (axis.target_steps > 0)
+    if ((axis.target_steps > 0) | true)
       steppers[axis_index][i].step(-DO_STEPS);
     else if (axis.target_steps < 0)
       steppers[axis_index][i].step(DO_STEPS);
@@ -77,7 +77,7 @@ void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
   else if (axis.target_steps < 0)
     axis.target_steps++;
 
-  Serial.println(axis.target_steps);
+  // Serial.println(axis.target_steps);
 }
 
 template <int enc_type, int pin1, int pin2, int pin3>
