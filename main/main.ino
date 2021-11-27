@@ -39,7 +39,7 @@ struct Axis
   {
     for (Stepper stepper : steppers)
     {
-      if ((target_steps > 0) | true)
+      if ((target_steps > 0) | true) // FIXME: |true added to check all the steppers are actually stepping, remove it when all good
         stepper.step(-DO_STEPS);
       else if (target_steps < 0)
         stepper.step(DO_STEPS);
@@ -52,6 +52,7 @@ struct Axis
 
     // Serial.println(axis.target_steps);
   };
+
   void tick_encoder()
   {
     encoder.tick();
