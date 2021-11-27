@@ -18,9 +18,6 @@
 #define peleng_steppers_speed  5
 #define steps_per_revolution   2000
 #define DO_STEPS 3
-
-// на оси пеленг - 3 степпера, в то время как у азимута - 2
-// но в любом случае используем число 3, и игнорируем 3 "степпер" на оси азимут, которого на самом деле не существует
 #define steppers_count_per_axis 3
 
 // struct RealStepper
@@ -34,35 +31,33 @@
 //   int backlash;
 // };
 
-template <int enc_type, int pin1, int pin2, int pin3>
+template <int steppers_count, int enc_type, int pin1, int pin2, int pin3>
 struct Axis 
 {
   int target_steps = 0;
   EncButton <enc_type, pin1, pin2, pin3> encoder;
   int pcint_pins[2];
-};
-
-// средние пины степперов должны быть поменяны иначе он будет только в одну сторону вне зависимости позитивное или негативное значение передается в .step()
-// создаем степперы тут потому что они должны быть инициализированы глобально, чтобы к ним был доступ внутри лупа. Запихнуть их в Axis не получится, поскольку никак не можем
-// инициализировать их пустыми конструкторами (проблема точно не изучена, потому что мы забыли в чем конкретно была проблема с Axis)
-Stepper steppers[2][steppers_count_per_axis] {
-  {
-    Stepper(steps_per_revolution, 11,  10, 8,  9),
-    Stepper(steps_per_revolution, 22, 26, 24, 28),
-    Stepper(steps_per_revolution, 0, 0, 0, 0)
-  },
-  {
-    Stepper(steps_per_revolution, 38, 39, 40, 41), // FIXME:
-    Stepper(steps_per_revolution, 42, 43, 44, 45), // FIXME:
-    Stepper(steps_per_revolution, 46, 47, 48, 49)  // FIXME:
+  Stepper steppers[3];
+  int stepper_count;
+  Axis(const Stepper (&s)[steppers_count]){
+    steppers = s;
+    stepper_count = steppers_count;
   }
 };
 
-Axis<EB_TICK, CLK_1, DT_1, SW_1> azimuth;
-Axis<EB_TICK, CLK_2, DT_2, SW_2> peleng;
 
-template <int enc_type, int pin1, int pin2, int pin3>
-void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
+Axis<2, EB_TICK, CLK_1, DT_1, SW_1> azimuth ({
+  Stepper(steps_per_revolution, 11,  10, 8,  9),
+  Stepper(steps_per_revolution, 22, 26, 24, 28)
+  });
+Axis<3, EB_TICK, CLK_2, DT_2, SW_2> peleng ({
+  Stepper(steps_per_revolution, 38, 39, 40, 41),
+  Stepper(steps_per_revolution, 42, 43, 44, 45),
+  Stepper(steps_per_revolution, 46, 47, 48, 49)
+  });
+
+template <int steppers_count, int enc_type, int pin1, int pin2, int pin3>
+void step_steppers(Axis <steppers_count, enc_type, pin1, pin2, pin3> & axis, int axis_index)
 {
   for (int i = 0; i < steppers_count_per_axis; i++)
   {
@@ -80,8 +75,8 @@ void step_steppers(Axis <enc_type, pin1, pin2, pin3> & axis, int axis_index)
   // Serial.println(axis.target_steps);
 }
 
-template <int enc_type, int pin1, int pin2, int pin3>
-void tick_encoder(Axis <enc_type, pin1, pin2, pin3> & axis)
+template <int steppers_count, int enc_type, int pin1, int pin2, int pin3>
+void tick_encoder(Axis <steppers_count, enc_type, pin1, pin2, pin3> & axis)
 {
   axis.encoder.tick();
   int increment = axis.encoder.isPress()? 600 : 1;
@@ -102,7 +97,7 @@ void tick_encoder(Axis <enc_type, pin1, pin2, pin3> & axis)
 void setup() 
 {
   Serial.begin(9600);
-  
+  Serial.println(azimuth.steppers_count)
   for (int i = 0; i < steppers_count_per_axis; i++)
   {
     steppers[0][i].setSpeed(azimuth_steppers_speed);
@@ -147,8 +142,8 @@ void loop()
   peleng.encoder.tick();
   azimuth.encoder.tick();
 
-  step_steppers<EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
-  step_steppers<EB_TICK, CLK_2, DT_2, SW_2>(peleng, 1);
+  step_steppers<2, EB_TICK, CLK_1, DT_1, SW_1>(azimuth, 0);
+  step_steppers<3, EB_TICK, CLK_2, DT_2, SW_2>(peleng, 1);
 }
 
 // FIXME: пофиксить варнинги: убрать аргументы в самом конце, если не используется "софтверный" pcint интерапт
