@@ -2,22 +2,9 @@
 #include <EncButton.h>
 #include <YetAnotherPcInt.h>
 
-#define DT_1    20
-#define CLK_1   21
-#define SW_1    A6
-#define LOW_1   A5
-#define HIGH_1  A7
-
-#define DT_2    A15
-#define CLK_2   A14
-#define SW_2    A2
-#define LOW_2   A3
-#define HIGH_2  A4
-
 #define steppers_speed 5
 #define steps_per_revolution   2000
 #define DO_STEPS 3
-#define steppers_count_per_axis 3
 
 // struct RealStepper
 // {
