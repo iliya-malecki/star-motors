@@ -106,15 +106,15 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[0]), isr_azimuth, CHANGE);
   attachInterrupt(digitalPinToInterrupt(azimuth.pcint_pins[1]), isr_azimuth, CHANGE);
   
-  pinMode(azimuth.enc_high, OUTPUT);
-  pinMode(azimuth.enc_low, OUTPUT);
-  digitalWrite(azimuth.enc_high, HIGH);
-  digitalWrite(azimuth.enc_low, LOW);
+  pinMode(peleng.enc_high, OUTPUT);
+  pinMode(peleng.enc_low, OUTPUT);
+  digitalWrite(peleng.enc_high, HIGH);
+  digitalWrite(peleng.enc_low, LOW);
 
   pinMode(peleng.pcint_pins[0], INPUT_PULLUP);
   pinMode(peleng.pcint_pins[1], INPUT_PULLUP);
-  PcInt::attachInterrupt(peleng.pcint_pins[0], isr_peleng, &peleng.pcint_pins[0], RISING);
-  PcInt::attachInterrupt(peleng.pcint_pins[1], isr_peleng, &peleng.pcint_pins[1], RISING);
+  PcInt::attachInterrupt(peleng.pcint_pins[0], isr_peleng, &peleng.pcint_pins[0], CHANGE);
+  PcInt::attachInterrupt(peleng.pcint_pins[1], isr_peleng, &peleng.pcint_pins[1], CHANGE);
 }
 
 void loop()
