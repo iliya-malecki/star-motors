@@ -17,11 +17,11 @@
 //   int backlash;
 // };
 
-const int stepper_count = 2;
-const int enc_type = 1;
-const int pin1 = 2;
-const int pin2 = 3;
-const int pin3 = 4;
+// const int stepper_count = 2;
+// const int enc_type = 1;
+// const int pin1 = 2;
+// const int pin2 = 3;
+// const int pin3 = 4;
 template <int stepper_count, int enc_type, int pin1, int pin2, int pin3, int low, int high>
 struct Axis 
 {
