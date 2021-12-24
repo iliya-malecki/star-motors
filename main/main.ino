@@ -2,8 +2,8 @@
 #include <EncButton.h>
 #include <YetAnotherPcInt.h>
 
-#define steppers_speed 5
-#define steps_per_revolution   2000
+//#define steppers_speed 32
+#define steps_per_revolution 200
 #define DO_STEPS 3
 
 // struct RealStepper
@@ -30,17 +30,18 @@ struct Axis
   int pcint_pins[2] = {pin1, pin2};
   int enc_high = high;
   int enc_low = low;
-  const Stepper steppers[stepper_count]; // does it have to be const Stepper or not const???
+  Stepper steppers[stepper_count]; // does it have to be const Stepper or not const???
   int steppers_count;
-  Axis(const Stepper (&s)[stepper_count]) : steppers(s)
+  Axis(Stepper (&&s)[stepper_count]) : steppers(s)
   {};
 
   void step_steppers()
   {
-    for (Stepper stepper : steppers)
+    for (Stepper& stepper : steppers)
     {
-      if ((target_steps > 0) | true) // FIXME: |true added to check all the steppers are actually stepping, remove it when all good
+      if (target_steps > 0){ // FIXME: |true added to check all the steppers are actually stepping, remove it when all good
         stepper.step(-DO_STEPS);
+      }
       else if (target_steps < 0)
         stepper.step(DO_STEPS);
     }
@@ -56,7 +57,7 @@ struct Axis
   void tick_encoder()
   {
     encoder.tick();
-    int increment = encoder.isPress()? 600 : 1;
+    int increment = encoder.isPress()? 5 : 1;
     if (encoder.isLeft())
     {
       target_steps += increment;
@@ -70,21 +71,21 @@ struct Axis
   };
 
   void set_speed(int speed){
-    for (Stepper stepper : steppers){
+    for (Stepper& stepper : steppers){
       stepper.setSpeed(speed);
     }
   };
 };
 
 Axis<2, EB_TICK, 21, 20, A6, A5, A7> azimuth ({
-  Stepper(steps_per_revolution, 11,  10, 8,  9),
-  Stepper(steps_per_revolution, 22, 26, 24, 28)
+  Stepper(steps_per_revolution, 11,  8, 10,  9),
+  Stepper(steps_per_revolution, 50, 52, 51, 53)
   });
 
 Axis<3, EB_TICK, A14, A15, A2, A3, A4> peleng ({
-  Stepper(steps_per_revolution, 38, 39, 40, 41),
-  Stepper(steps_per_revolution, 42, 43, 44, 45),
-  Stepper(steps_per_revolution, 46, 47, 48, 49)
+  Stepper(steps_per_revolution, 38, 40, 39, 41),
+  Stepper(steps_per_revolution, 42, 44, 43, 45),
+  Stepper(steps_per_revolution, 46, 48, 47, 49)
   });
 
 
@@ -92,7 +93,8 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println(azimuth.steppers_count);
-  azimuth.set_speed(steppers_speed);
+  azimuth.set_speed(21);
+  peleng.set_speed(32);
 
   azimuth.encoder.counter = 0;
   peleng.encoder.counter = 0;
