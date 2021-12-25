@@ -78,7 +78,7 @@ struct Axis
 };
 
 Axis<2, EB_TICK, 21, 20, A6, A5, A7> azimuth ({
-  Stepper(steps_per_revolution, 11,  8, 10,  9),
+  Stepper(steps_per_revolution, 9, 10, 8, 11),
   Stepper(steps_per_revolution, 50, 52, 51, 53)
   });
 
