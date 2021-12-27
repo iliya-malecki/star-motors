@@ -6,16 +6,15 @@
 #define steps_per_revolution 200
 #define DO_STEPS 3
 
-// struct RealStepper
-// {
-//   RealStepper(const Stepper&& stpr, int bl) 
-//   : stepper(stpr), backlash(bl)
-//   {
-//   }
-  
-//   Stepper stepper;
-//   int backlash;
-// };
+struct RealStepper {
+  Stepper stepper;
+  int backlash;
+
+  RealStepper(const Stepper&& stpr, int bl) 
+  : stepper(stpr), backlash(bl)
+  {
+  } 
+};
 
 // const int stepper_count = 2;
 // const int enc_type = 1;
@@ -23,39 +22,51 @@
 // const int pin2 = 3;
 // const int pin3 = 4;
 template <int stepper_count, int enc_type, int pin1, int pin2, int pin3, int low, int high>
-struct Axis 
-{
+struct Axis {
   int target_steps = 0;
   EncButton <enc_type, pin1, pin2, pin3> encoder;
   int pcint_pins[2] = {pin1, pin2};
   int enc_high = high;
   int enc_low = low;
-  Stepper steppers[stepper_count]; // does it have to be const Stepper or not const???
-  int steppers_count;
-  Axis(Stepper (&&s)[stepper_count]) : steppers(s)
+  bool is_moving_forward = true;
+  RealStepper real_steppers[stepper_count]; 
+  Axis(RealStepper (&&s)[stepper_count]) : real_steppers(s)
   {};
 
-  void step_steppers()
-  {
-    for (Stepper& stepper : steppers)
+  void step_steppers() {
+    // a tad ugly, but skipping 2n if-statements or so compared to checking the same thing in the loop
+    // we have n=5 (steppers total), so im happy with it
+
+    bool gotta_compensate = false;
+    if ((target_steps > 0) != is_moving_forward)
     {
-      if (target_steps > 0){ // FIXME: |true added to check all the steppers are actually stepping, remove it when all good
-        stepper.step(-DO_STEPS);
-      }
-      else if (target_steps < 0)
-        stepper.step(DO_STEPS);
+      is_moving_forward = !is_moving_forward;
+      gotta_compensate = true;
     }
 
     if (target_steps > 0)
+    {
+      for (RealStepper& real_stepper : real_steppers)
+      {
+        real_stepper.stepper.step(
+          -(DO_STEPS + (gotta_compensate ? real_stepper.backlash : 0)));
+      }
       target_steps--;
-    else if (target_steps < 0)
-      target_steps++;
+    }
 
-    // Serial.println(axis.target_steps);
+    else if (target_steps < 0)
+    {
+      for (RealStepper& real_stepper : real_steppers)
+      {
+        real_stepper.stepper.step(
+            DO_STEPS + (gotta_compensate ? real_stepper.backlash : 0));
+      }
+      target_steps++;
+    }
+
   };
 
-  void tick_encoder()
-  {
+  void tick_encoder() {
     encoder.tick();
     int increment = encoder.isPress()? 5 : 1;
     if (encoder.isLeft())
@@ -70,29 +81,47 @@ struct Axis
     }
   };
 
-  void set_speed(int speed){
-    for (Stepper& stepper : steppers){
-      stepper.setSpeed(speed);
+  void set_speed(int speed) {
+    for (RealStepper& real_stepper : real_steppers){
+      real_stepper.stepper.setSpeed(speed);
     }
   };
 };
 
 Axis<2, EB_TICK, 21, 20, A6, A5, A7> azimuth ({
-  Stepper(steps_per_revolution, 9, 10, 8, 11),
-  Stepper(steps_per_revolution, 50, 52, 51, 53)
+
+  RealStepper(
+    Stepper(steps_per_revolution, 9, 10, 8, 11),
+    0),
+
+  RealStepper(
+    Stepper(steps_per_revolution, 50, 52, 51, 53),
+    0)
+
   });
 
+
+
 Axis<3, EB_TICK, A14, A15, A2, A3, A4> peleng ({
-  Stepper(steps_per_revolution, 38, 40, 39, 41),
-  Stepper(steps_per_revolution, 42, 44, 43, 45),
-  Stepper(steps_per_revolution, 46, 48, 47, 49)
+
+  RealStepper(
+    Stepper(steps_per_revolution, 38, 40, 39, 41),
+    0),
+
+  RealStepper(
+    Stepper(steps_per_revolution, 42, 44, 43, 45),
+    0),
+
+  RealStepper(
+    Stepper(steps_per_revolution, 46, 48, 47, 49),
+    0)
+
   });
 
 
 void setup() 
 {
   Serial.begin(9600);
-  Serial.println(azimuth.steppers_count);
   azimuth.set_speed(21);
   peleng.set_speed(32);
 
