@@ -68,7 +68,7 @@ struct Axis {
 
   void tick_encoder() {
     encoder.tick();
-    int increment = encoder.isPress()? 5 : 1;
+    int increment = encoder.hold()? 5 : 1; //TODO: check if this function works as expected
     if (encoder.isLeft())
     {
       target_steps += increment;
@@ -150,9 +150,8 @@ void setup()
 
 void loop()
 {
-  delay(1);
+  delay(1); //TODO: check if it does anything useful
 
-  // TODO: этот тик не разрешает нам проверят нажата кнопка или нет 
   peleng.encoder.tick();
   azimuth.encoder.tick();
 
